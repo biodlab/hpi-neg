@@ -11,4 +11,5 @@
 -m model (pipr, denovo, deepviral, deeptrio)\
 -n name (experiment name, required for log files)\
 -t file (training file eg a csv, required)\
--l length (maximum sequence length, required for .... models FILL ME IN)
+-l length (maximum sequence length, deepviral: -l 1000, deeptrio: 1500)\
+-e epochs (epochs, deepviral: -e 30, deeptrio: -e 50)
