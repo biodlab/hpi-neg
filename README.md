@@ -16,4 +16,4 @@
 -f fasta (for denovo datasets, use denovo.fasta, for hpidb-denovo, use hpidb.fasta)\
 -B (required only for hpidb-ratio*.csv to use balanced pos/neg batches)
 
-NOTE: DeepTrio requires 15+ gigs of gpu memory.\
+NOTE: DeepTrio requires 15+ gigs of gpu memory.
