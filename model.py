@@ -39,7 +39,7 @@ class dataloader(Dataset):
             self.load_embeddings()
 
     def sampler(self):
-        class_count = np.array([self.negsamples, self.possamples])
+        class_count = np.array([self.negsamples*.1, self.possamples*.1])
         print("class_count:", class_count)
         class_count = 1./class_count
         sample_weights = torch.from_numpy(np.array([class_count[x] for x in self.status]))
@@ -605,7 +605,12 @@ def generate_splits(args, dotrain=True):
 
             print(model)
             data = dataloader(trainclasses, fastafile=args.fastafile, length=args.maxlength, enctype=enctype)
-            data_loader = DataLoader(dataset=data, batch_size=args.batchsize, shuffle=True)
+            if args.balance:
+                data_sampler = data.sampler()
+                sampler = WeightedRandomSampler(data_sampler, len(data_sampler))
+                data_loader = DataLoader(dataset=data, batch_size=args.batchsize, sampler=sampler)
+            else:
+                data_loader = DataLoader(dataset=data, batch_size=args.batchsize, shuffle=True)
             valid_data = dataloader(validclasses, fastafile=args.fastafile, length=args.maxlength, enctype=enctype)
             valid_loader = DataLoader(dataset=valid_data, batch_size=args.batchsize, shuffle=False)
             trloss, vlloss, tracc, vlacc, trauc, vlauc, traupr, vlaupr, trbal, vlbal, trmat, vlmat, _, _ , _, _, _, _ = train(args, datadict, device, model, optimizer, criterion, data_loader, valid_loader, None, foldnumber = foldnumber)
@@ -915,6 +920,7 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--name", default=None, help="name of experiment for saving, required")
     parser.add_argument("-t", "--trainfile", default=None, type=str, help="train csv")
     parser.add_argument("-v", "--testfile", default=None, type=str, help="test csv if not five-fold")
+    parser.add_argument("-B", "--balance", default=False, action="store_true", help="balance pos/neg samples (default: False)")
     parser.add_argument("-D", "--debug", default=False, action="store_true")
 
     args = parser.parse_args()
