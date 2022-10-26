@@ -95,7 +95,7 @@ class dataloader(Dataset):
 
 # TODO: for feature_file need both Feat.npy for hpidb and DenovoFeat.npy
 # Feat.npy is hpidb and DenovoFeat.npy is orig denovo set
-def get_denovo_svm_data(classes, feature_file="Feat.npy"):
+def get_denovo_svm_data(classes, feature_file="denovo-hpidb-features.npy"):
     seq_feat = []
     labels = []
     t1 = np.load(feature_file,allow_pickle=True)
@@ -512,8 +512,11 @@ class pipr_network(nn.Module):
         return x
 
 def train_denovo(args, datadict, trainclasses, validclasses, foldnumber=-1):
-    trainfeat,trainlabels=get_denovo_svm_data(trainclasses)
-    validfeat,validlabels=get_denovo_svm_data(validclasses)
+    featfile = "denovo-features.npy"
+    if args.fastafile.startswith("hpidb"):
+        featfile = "denovo-hpidb-features.npy"
+    trainfeat,trainlabels=get_denovo_svm_data(trainclasses, feature_file=featfile)
+    validfeat,validlabels=get_denovo_svm_data(validclasses, feature_file=featfile)
     clf=SVC(degree=3,gamma='auto',C=1,coef0=0,cache_size=100, verbose=True, probability=True)
     res = clf.fit(trainfeat, trainlabels)
     resultdata = clf.predict_proba(validfeat)
@@ -908,7 +911,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--model", default="pipr", type=str, help="model (default: pipr)")
     parser.add_argument("-l", "--maxlength", default=2000, type=int, help="default: 2000")
     parser.add_argument("-f", "--fastafile", default=None, type=str)
-    parser.add_argument("-5", "--fivefold", default=False, action="store_true", help="run five-fold cross validation (default: False)")
+    parser.add_argument("-5", "--fivefold", default=True, action="store_false", help="run five-fold cross validation (default: True)")
     parser.add_argument("-n", "--name", default=None, help="name of experiment for saving, required")
     parser.add_argument("-t", "--trainfile", default=None, type=str, help="train csv")
     parser.add_argument("-v", "--testfile", default=None, type=str, help="test csv if not five-fold")
